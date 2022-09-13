@@ -169,7 +169,7 @@
           # }];
 
           # Usage:
-          myHackages = mkHackagesFor system compiler-nix-name [  ./amazonka-1.6.1.tar.gz ];
+          myHackages = mkHackagesFor system compiler-nix-name [ ./mydepdep ./mydep ];
           myapp = final.haskell-nix.cabalProject' {
             src = ./myapp;
             inherit compiler-nix-name;
