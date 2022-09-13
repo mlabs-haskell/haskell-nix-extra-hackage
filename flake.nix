@@ -141,7 +141,20 @@
 
       mkHackageFor = system: compiler-nix-name: srcs: mkHackageFromSpecFor system compiler-nix-name (map mkPackageSpec srcs);
 
-      mkHackagesFor = system: compiler-nix-name: srcs: mkHackagesFromSpecFor system compiler-nix-name (map mkPackageSpec srcs);
+      untar = system: file:
+        let x =
+              (pkgsFor system).runCommand "untar ${builtins.trace "untarring file: ${file}" file}" { } ''
+        mkdir -p $out
+        cd $out
+        tar xfz ${file} --strip-components=1
+        ''; in x.outPath;
+
+      mkHackagesFor = system: compiler-nix-name: srcs: mkHackagesFromSpecFor system compiler-nix-name (map (src:
+        if lib.hasSuffix ".tar.gz" src then
+          mkPackageSpec(untar system src)
+          # mkPackageSpec (builtins.filterSource (p: t: true) (untar system src)) # I think this needs import from derivation?
+        else mkPackageSpec (builtins.trace "${src}" src)
+      ) srcs);
 
       overlayFor = system: final: prev:
         let compiler-nix-name = "ghc8107"; in
@@ -156,7 +169,7 @@
           # }];
 
           # Usage:
-          myHackages = mkHackagesFor system compiler-nix-name [ ./mydepdep ./mydep ];
+          myHackages = mkHackagesFor system compiler-nix-name [  ./amazonka-1.6.1.tar.gz ];
           myapp = final.haskell-nix.cabalProject' {
             src = ./myapp;
             inherit compiler-nix-name;
@@ -193,7 +206,7 @@
       });
 
       # export
-      inherit mkPackageSpec mkPackageTarballFor mkHackageDirFor mkHackageTarballFromDirsFor mkHackageTarballFor mkHackageNixFor mkHackageFromSpecFor mkHackagesFromSpecFor mkHackageFor mkHackagesFor;
+      inherit mkPackageSpec mkPackageTarballFor mkHackageDirFor mkHackageTarballFromDirsFor mkHackageTarballFor mkHackageNixFor mkHackageFromSpecFor mkHackagesFromSpecFor mkHackageFor mkHackagesFor untar;
       overlay = perSystem overlayFor;
 
       # for debugging
