@@ -30,7 +30,7 @@
           cabalFile = builtins.readFile cabalPath;
           parse = field:
             let
-              lines = filter (s: if builtins.match "^${field} *:.*$" (toLower s) != null then true else false) (splitString "\n" cabalFile);
+              lines = filter (s: if builtins.match "^${field} *:.*$" (toLower s) != null then true else false) (map (field: replaceStrings ["\r"] [""] field) (splitString "\n" cabalFile));
               line =
                 if lines != [ ]
                 then head lines
