@@ -1,3 +1,7 @@
+# DEPRECATED
+
+> Please use this instead: https://github.com/mlabs-haskell/mlabs-tooling.nix/blob/main/mk-hackage.nix
+
 Add dependencies to haskell.nix project via `extra-hackages` and `extra-hackage-tarballs`.
 
 
